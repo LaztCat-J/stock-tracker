@@ -32,7 +32,7 @@ jobs:
           GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
           GOOGLE_SHEET_NAME: "Stock Insight Report"
         run: |
-          python blog_stock_cloud.py
+          python stock_cloud_261014.py
 
       - name: 5. 업데이트된 누적 장부(CSV)를 서버에 영구 저장
         run: |
