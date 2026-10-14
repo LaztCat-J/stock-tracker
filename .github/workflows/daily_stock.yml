@@ -23,7 +23,7 @@ jobs:
 
       - name: 3. 필요한 패키지 설치
         run: |
-          pip install requests beautifulsoup4 pandas FinanceDataReader openpyxl gspread google-auth
+          pip install requests beautifulsoup4 pandas finance-datareader openpyxl gspread google-auth
 
       - name: 4. 타점 분석 & 구글 시트 업데이트 & 텔레그램 발송 실행
         env:
