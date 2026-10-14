@@ -1,0 +1,43 @@
+name: Daily Stock Mention Tracker
+
+on:
+  schedule:
+    # UTC 23:00 = 한국 시간(KST) 다음날 오전 08:00 정각
+    - cron: '0 23 * * *'
+  workflow_dispatch: # 내가 원할 때 마우스 클릭 한 번으로 즉시 테스트 실행하는 버튼
+
+permissions:
+  contents: write # 누적 장부(CSV)를 서버에 자동 저장하기 위한 권한
+
+jobs:
+  analyze_and_notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 1. 저장소 코드 불러오기
+        uses: actions/checkout@v4
+
+      - name: 2. 파이썬 설치
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 3. 필요한 패키지 설치
+        run: |
+          pip install requests beautifulsoup4 pandas FinanceDataReader openpyxl gspread google-auth
+
+      - name: 4. 타점 분석 & 구글 시트 업데이트 & 텔레그램 발송 실행
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+          GOOGLE_SHEET_NAME: "Stock Insight Report"
+        run: |
+          python blog_stock_cloud.py
+
+      - name: 5. 업데이트된 누적 장부(CSV)를 서버에 영구 저장
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add stock_mention_history_db_v3.csv
+          git diff --staged --quiet || git commit -m "Auto-update stock DB"
+          git push
