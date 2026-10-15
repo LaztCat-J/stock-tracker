@@ -2,8 +2,8 @@ name: Daily Stock Mention Tracker
 
 on:
   schedule:
-    # UTC 23:00 = 한국 시간(KST) 다음날 오전 08:00 정각
-    - cron: '0 23 * * *'
+    # UTC 22:40 = 한국 시간(KST) 오전 07:40 (정각 대기열을 피해 8시 전에 도착!)
+    - cron: '40 22 * * *'
   workflow_dispatch: # 내가 원할 때 마우스 클릭 한 번으로 즉시 테스트 실행하는 버튼
 
 permissions:
@@ -38,6 +38,6 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add stock_mention_history_db_v3.csv
+          git add *.csv
           git diff --staged --quiet || git commit -m "Auto-update stock DB"
           git push
