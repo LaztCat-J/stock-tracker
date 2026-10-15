@@ -7,17 +7,14 @@ import re
 import time
 import urllib.parse
 import FinanceDataReader as fdr
-from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
-from openpyxl.utils import get_column_letter
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 
-# 구글 시트 및 텔레그램 전송용 라이브러리 (깃허브 액션 환경에서 자동 설치됨)
+# 구글 시트 연동 라이브러리
 try:
     import gspread
     from google.oauth2.service_account import Credentials
-
     GOOGLE_API_AVAILABLE = True
 except ImportError:
     GOOGLE_API_AVAILABLE = False
@@ -38,11 +35,8 @@ class ContentItem:
 
 
 class BaseCollector(ABC):
-
     @abstractmethod
-    def collect(
-        self, days_limit: int, known_ids: set[str]
-    ) -> list[ContentItem]:
+    def collect(self, days_limit: int, known_ids: set[str]) -> list[ContentItem]:
         pass
 
 
@@ -65,9 +59,7 @@ class NaverBlogCollector(BaseCollector):
             known_ids = set()
 
         items = []
-        cutoff_date = datetime.date.today() - datetime.timedelta(
-            days=days_limit
-        )
+        cutoff_date = datetime.date.today() - datetime.timedelta(days=days_limit)
 
         if known_ids:
             print(
@@ -109,9 +101,7 @@ class NaverBlogCollector(BaseCollector):
                 raw_title = urllib.parse.unquote(post.get("title", "")).replace(
                     "+", " "
                 )
-                add_date_str = (
-                    post.get("addDate", "").replace(" ", "").rstrip(".")
-                )
+                add_date_str = post.get("addDate", "").replace(" ", "").rstrip(".")
 
                 try:
                     post_date = datetime.datetime.strptime(
@@ -187,31 +177,9 @@ class StockEngine:
         self.stock_map = {}
         self.price_cache = {}
         self.negative_words = [
-            "위험",
-            "유의",
-            "주의",
-            "조심",
-            "피해",
-            "피하",
-            "하락",
-            "폭락",
-            "급락",
-            "적자",
-            "부실",
-            "부도",
-            "파산",
-            "워크아웃",
-            "법정관리",
-            "상장폐지",
-            "상폐",
-            "거품",
-            "고평가",
-            "과열",
-            "악재",
-            "우려",
-            "타격",
-            "손실",
-            "차익실현",
+            "위험", "유의", "주의", "조심", "피해", "피하", "하락", "폭락", "급락",
+            "적자", "부실", "부도", "파산", "워크아웃", "법정관리", "상장폐지", "상폐",
+            "거품", "고평가", "과열", "악재", "우려", "타격", "손실", "차익실현",
         ]
 
         self.custom_theme_dict = {
@@ -274,88 +242,17 @@ class StockEngine:
         }
 
         self.issue_keywords = [
-            "AI",
-            "데이터센터",
-            "HBM",
-            "반도체",
-            "엔비디아",
-            "전력망",
-            "변압기",
-            "전선",
-            "구리",
-            "원전",
-            "SMR",
-            "우라늄",
-            "가스터빈",
-            "신재생",
-            "태양광",
-            "풍력",
-            "ESS",
-            "방산",
-            "우주",
-            "위성",
-            "미사일",
-            "전차",
-            "자주포",
-            "탄약",
-            "전쟁",
-            "중동",
-            "조선",
-            "LNG",
-            "해운",
-            "운임",
-            "MRO",
-            "함정",
-            "잠수함",
-            "쇄빙선",
-            "비만치료제",
-            "바이오",
-            "CDMO",
-            "생물보안법",
-            "신약",
-            "FDA",
-            "임상",
-            "ADC",
-            "트럼프",
-            "해리스",
-            "관세",
-            "미중갈등",
-            "공급망",
-            "보조금",
-            "리쇼어링",
-            "금리인하",
-            "금리",
-            "연준",
-            "환율",
-            "엔화",
-            "밸류업",
-            "배당",
-            "자사주",
-            "수주",
-            "실적",
-            "어닝서프라이즈",
-            "수출",
-            "품귀",
-            "공급부족",
-            "독점",
-            "양자컴퓨터",
-            "로봇",
-            "자율주행",
-            "전기차",
-            "하이브리드",
-            "2차전지",
-            "리튬",
-            "원유",
-            "천연가스",
-            "금값",
-            "은값",
-            "희토류",
-            "곡물",
-            "불닭",
-            "화장품",
-            "중국",
-            "부양책",
-            "이구환신",
+            "AI", "데이터센터", "HBM", "반도체", "엔비디아", "전력망", "변압기", "전선", "구리",
+            "원전", "SMR", "우라늄", "가스터빈", "신재생", "태양광", "풍력", "ESS",
+            "방산", "우주", "위성", "미사일", "전차", "자주포", "탄약", "전쟁", "중동",
+            "조선", "LNG", "해운", "운임", "MRO", "함정", "잠수함", "쇄빙선",
+            "비만치료제", "바이오", "CDMO", "생물보안법", "신약", "FDA", "임상", "ADC",
+            "트럼프", "해리스", "관세", "미중갈등", "공급망", "보조금", "리쇼어링",
+            "금리인하", "금리", "연준", "환율", "엔화", "밸류업", "배당", "자사주",
+            "수주", "실적", "어닝서프라이즈", "수출", "품귀", "공급부족", "독점",
+            "양자컴퓨터", "로봇", "자율주행", "전기차", "하이브리드", "2차전지", "리튬",
+            "원유", "천연가스", "금값", "은값", "희토류", "곡물", "불닭", "화장품",
+            "중국", "부양책", "이구환신",
         ]
 
         self._build_universe()
@@ -363,250 +260,35 @@ class StockEngine:
 
     def _build_universe(self):
         exclude_kr = {
-            "NAVER",
-            "SBS",
-            "YTN",
-            "KNN",
-            "IHQ",
-            "CJ",
-            "SK",
-            "LG",
-            "GS",
-            "LS",
-            "캐리",
-            "남성",
-            "씨앗",
-            "배럴",
-            "대상",
-            "모두투어",
-            "위메이드",
-            "원익",
-            "선도전기",
-            "이수",
-            "선익",
-            "신영",
-            "대신",
-            "한양",
-            "서울",
-            "부산",
-            "동양",
-            "대한",
-            "제일",
-            "고려",
-            "우리",
-            "한창",
-            "미래",
-            "흥국",
-            "보령",
-            "성안",
-            "대원",
-            "삼영",
-            "동원",
-            "태광",
-            "세방",
-            "화성",
-            "우진",
-            "신성",
-            "대유",
-            "삼천리",
-            "국보",
-            "백광",
-            "조일",
-            "남선",
-            "동방",
-            "전방",
-            "방림",
-            "일신",
-            "대동",
-            "대창",
-            "동국",
-            "동서",
-            "동신",
-            "동아",
-            "동일",
-            "삼보",
-            "삼진",
-            "삼화",
-            "성신",
-            "세기",
-            "세원",
-            "세진",
-            "신라",
-            "신원",
-            "신일",
-            "신흥",
-            "아세아",
-            "영풍",
-            "유니온",
-            "유성",
-            "유진",
-            "일성",
-            "일양",
-            "일정",
-            "일진",
-            "중앙",
-            "진흥",
-            "태양",
-            "태영",
-            "태원",
-            "평화",
-            "한국",
-            "한성",
-            "한신",
-            "한일",
-            "현대",
-            "화신",
-            "화천",
-            "환인",
-            "흥아",
-            "가온",
-            "나무",
-            "나래",
-            "누리",
-            "다산",
-            "대림",
-            "대명",
-            "대성",
-            "대주",
-            "대호",
-            "덕산",
-            "덕성",
-            "덕양",
-            "도화",
-            "동구",
-            "동성",
-            "동우",
-            "동운",
-            "동화",
-            "두산",
-            "디아이",
-            "레이",
-            "리노",
-            "마니커",
-            "모베이스",
-            "무학",
-            "바다",
-            "보광",
-            "보해",
-            "부국",
-            "비츠로",
-            "사조",
-            "삼기",
-            "삼륭",
-            "삼목",
-            "삼부",
-            "상상인",
-            "상신",
-            "새론",
-            "서연",
-            "서원",
-            "서진",
-            "서희",
-            "선진",
-            "성광",
-            "성도",
-            "성문",
-            "성보",
-            "성우",
-            "성호",
-            "세명",
-            "세보",
-            "세아",
-            "세우",
-            "세운",
-            "세코닉스",
-            "세한",
-            "소프트센",
-            "솔본",
-            "수산",
-            "시공테크",
-            "시너지",
-            "신풍",
-            "쌍용",
-            "아이콘",
-            "아진",
-            "안국",
-            "알파",
-            "에스엘",
-            "에이스",
-            "에이프로",
-            "엔케이",
-            "엘앤씨",
-            "엠케이",
-            "영보",
-            "영신",
-            "영원",
-            "영진",
-            "영흥",
-            "오리온",
-            "오성",
-            "오스코텍",
-            "와이지",
-            "우림",
-            "우성",
-            "우신",
-            "우원",
-            "우정",
-            "원풍",
-            "유니드",
-            "유니슨",
-            "유니크",
-            "유라",
-            "유비쿼스",
-            "유신",
-            "유안타",
-            "유유",
-            "유화",
-            "율촌",
-            "이구산업",
-            "이니텍",
-            "이노션",
-            "이더블유",
-            "이랜텍",
-            "이리츠",
-            "이마트",
-            "이연",
-            "이지",
-            "이화",
-            "인디에프",
-            "인산가",
-            "인성",
-            "인스코비",
-            "인탑스",
-            "인포바인",
-            "인피니트",
-            "일동",
-            "일야",
-            "일지테크",
-            "자화전자",
-            "장원",
-            "재영",
-            "정다운",
-            "정상제이엘에스",
-            "정산애강",
-            "정원",
-            "제노포커스",
-            "제우스",
-            "제이준",
-            "제일연마",
-            "제주",
-            "조광",
-            "조비",
-            "조선",
-            "조아",
-            "종근당",
-            "좋은사람들",
-            "주성",
-            "주연",
-            "삼양",
-            "금양",
-            "금호",
-            "한화",
-            "효성",
-            "코오롱",
-            "웅진",
-            "교보",
-            "다우",
+            "NAVER", "SBS", "YTN", "KNN", "IHQ", "CJ", "SK", "LG", "GS", "LS",
+            "캐리", "남성", "씨앗", "배럴", "대상", "모두투어", "위메이드", "원익",
+            "선도전기", "이수", "선익", "신영", "대신", "한양", "서울", "부산", "동양",
+            "대한", "제일", "고려", "우리", "한창", "미래", "흥국", "보령", "성안",
+            "대원", "삼영", "동원", "태광", "세방", "화성", "우진", "신성", "대유",
+            "삼천리", "국보", "백광", "조일", "남선", "동방", "전방", "방림", "일신",
+            "대동", "대창", "동국", "동서", "동신", "동아", "동일", "삼보", "삼진",
+            "삼화", "성신", "세기", "세원", "세진", "신라", "신원", "신일", "신흥",
+            "아세아", "영풍", "유니온", "유성", "유진", "일성", "일양", "일정", "일진",
+            "중앙", "진흥", "태양", "태영", "태원", "평화", "한국", "한성", "한신",
+            "한일", "현대", "화신", "화천", "환인", "흥아", "가온", "나무", "나래",
+            "누리", "다산", "대림", "대명", "대성", "대주", "대호", "덕산", "덕성",
+            "덕양", "도화", "동구", "동성", "동우", "동운", "동화", "두산", "디아이",
+            "레이", "리노", "마니커", "모베이스", "무학", "바다", "보광", "보해", "부국",
+            "비츠로", "사조", "삼기", "삼륭", "삼목", "삼부", "상상인", "상신", "새론",
+            "서연", "서원", "서진", "서희", "선진", "성광", "성도", "성문", "성보",
+            "성우", "성호", "세명", "세보", "세아", "세우", "세운", "세코닉스", "세한",
+            "소프트센", "솔본", "수산", "시공테크", "시너지", "신풍", "쌍용", "아이콘",
+            "아진", "안국", "알파", "에스엘", "에이스", "에이프로", "엔케이", "엘앤씨",
+            "엠케이", "영보", "영신", "영원", "영진", "영흥", "오리온", "오성", "오스코텍",
+            "와이지", "우림", "우성", "우신", "우원", "우정", "원풍", "유니드", "유니슨",
+            "유니크", "유라", "유비쿼스", "유신", "유안타", "유유", "유화", "율촌",
+            "이구산업", "이니텍", "이노션", "이더블유", "이랜텍", "이리츠", "이마트",
+            "이연", "이지", "이화", "인디에프", "인산가", "인성", "인스코비", "인탑스",
+            "인포바인", "인피니트", "일동", "일야", "일지테크", "자화전자", "장원",
+            "재영", "정다운", "정상제이엘에스", "정산애강", "정원", "제노포커스", "제우스",
+            "제이준", "제일연마", "제주", "조광", "조비", "조선", "조아", "종근당",
+            "좋은사람들", "주성", "주연", "삼양", "금양", "금호", "한화", "효성",
+            "코오롱", "웅진", "교보", "다우",
         }
 
         sector_map_kr = {}
@@ -654,201 +336,37 @@ class StockEngine:
                     "theme_desc": theme_desc,
                 }
 
+        # "네이버" 한글 언급 시에는 NAVER(035420)로 정상 매칭되도록 별칭 등록
+        self.stock_map["네이버"] = {
+            "std_name": "NAVER",
+            "code": "035420",
+            "market": "KR",
+            "sector": "서비스업 (포털/AI)",
+            "theme_desc": self.custom_theme_dict["NAVER"],
+        }
+
         try:
             df_sp500 = fdr.StockListing("S&P500")
             exclude_us = {
-                "ALL",
-                "CAN",
-                "SEE",
-                "ARE",
-                "NOW",
-                "ONE",
-                "OUT",
-                "HAS",
-                "KEY",
-                "LOW",
-                "DAY",
-                "NEW",
-                "BIG",
-                "TOP",
-                "FOR",
-                "AND",
-                "THE",
-                "YOU",
-                "NOT",
-                "GET",
-                "MAY",
-                "WAY",
-                "BRO",
-                "CAT",
-                "COP",
-                "COST",
-                "FAST",
-                "FIT",
-                "FIVE",
-                "FOX",
-                "FUN",
-                "GAP",
-                "GEN",
-                "GOLD",
-                "GOOD",
-                "HAS",
-                "HES",
-                "HIGH",
-                "HIT",
-                "HOME",
-                "HON",
-                "HOPE",
-                "HOT",
-                "ICE",
-                "ING",
-                "ITT",
-                "JOB",
-                "JOY",
-                "KEY",
-                "KIM",
-                "LAW",
-                "LEG",
-                "LEN",
-                "LIFE",
-                "LINE",
-                "LIVE",
-                "LOVE",
-                "LOW",
-                "MAN",
-                "MAP",
-                "MAR",
-                "MAS",
-                "MAT",
-                "MAX",
-                "MED",
-                "MEN",
-                "MET",
-                "MID",
-                "MIN",
-                "MOM",
-                "NET",
-                "NEXT",
-                "NICE",
-                "NINE",
-                "NOW",
-                "OIL",
-                "OLD",
-                "ONE",
-                "OPEN",
-                "OUR",
-                "OUT",
-                "PAY",
-                "PEG",
-                "PEP",
-                "PET",
-                "PLAY",
-                "PLUS",
-                "POOL",
-                "POST",
-                "PRO",
-                "PUT",
-                "PWR",
-                "RAW",
-                "RAY",
-                "RED",
-                "REG",
-                "RENT",
-                "RES",
-                "RICH",
-                "RIDE",
-                "RING",
-                "ROE",
-                "ROL",
-                "ROPE",
-                "ROSE",
-                "RUN",
-                "SAFE",
-                "SAVE",
-                "SAY",
-                "SEA",
-                "SEE",
-                "SELF",
-                "SELL",
-                "SET",
-                "SHIP",
-                "SHOP",
-                "SHOW",
-                "SITE",
-                "SIX",
-                "SKY",
-                "SLOW",
-                "SNOW",
-                "SOON",
-                "SPOT",
-                "STAR",
-                "STAY",
-                "STEP",
-                "STOP",
-                "SUN",
-                "SURE",
-                "TALK",
-                "TAX",
-                "TEAM",
-                "TECH",
-                "TELL",
-                "TEN",
-                "TERM",
-                "TEST",
-                "TEXT",
-                "TIME",
-                "TIN",
-                "TIP",
-                "TRUE",
-                "TRY",
-                "TURN",
-                "TWO",
-                "TYPE",
-                "UNIT",
-                "USE",
-                "VAN",
-                "VERY",
-                "VIEW",
-                "VOTE",
-                "WAIT",
-                "WALK",
-                "WALL",
-                "WANT",
-                "WAR",
-                "WASH",
-                "WAVE",
-                "WAY",
-                "WEAR",
-                "WEEK",
-                "WELL",
-                "WEST",
-                "WHAT",
-                "WHEN",
-                "WHO",
-                "WIDE",
-                "WIFI",
-                "WILL",
-                "WIN",
-                "WIND",
-                "WINE",
-                "WING",
-                "WIRE",
-                "WISE",
-                "WISH",
-                "WITH",
-                "WOOD",
-                "WORD",
-                "WORK",
-                "YEAR",
-                "YES",
-                "YET",
-                "YOU",
-                "ZERO",
-                "ZONE",
-                "COO",
-                "CEO",
-                "CFO",
-                "CTO",
+                "ALL", "CAN", "SEE", "ARE", "NOW", "ONE", "OUT", "HAS", "KEY", "LOW", "DAY",
+                "NEW", "BIG", "TOP", "FOR", "AND", "THE", "YOU", "NOT", "GET", "MAY", "WAY",
+                "BRO", "CAT", "COP", "COST", "FAST", "FIT", "FIVE", "FOX", "FUN", "GAP",
+                "GEN", "GOLD", "GOOD", "HAS", "HES", "HIGH", "HIT", "HOME", "HON", "HOPE",
+                "HOT", "ICE", "ING", "ITT", "JOB", "JOY", "KEY", "KIM", "LAW", "LEG", "LEN",
+                "LIFE", "LINE", "LIVE", "LOVE", "LOW", "MAN", "MAP", "MAR", "MAS", "MAT",
+                "MAX", "MED", "MEN", "MET", "MID", "MIN", "MOM", "NET", "NEXT", "NICE",
+                "NINE", "NOW", "OIL", "OLD", "ONE", "OPEN", "OUR", "OUT", "PAY", "PEG",
+                "PEP", "PET", "PLAY", "PLUS", "POOL", "POST", "PRO", "PUT", "PWR", "RAW",
+                "RAY", "RED", "REG", "RENT", "RES", "RICH", "RIDE", "RING", "ROE", "ROL",
+                "ROPE", "ROSE", "RUN", "SAFE", "SAVE", "SAY", "SEA", "SEE", "SELF", "SELL",
+                "SET", "SHIP", "SHOP", "SHOW", "SITE", "SIX", "SKY", "SLOW", "SNOW", "SOON",
+                "SPOT", "STAR", "STAY", "STEP", "STOP", "SUN", "SURE", "TALK", "TAX", "TEAM",
+                "TECH", "TELL", "TEN", "TERM", "TEST", "TEXT", "TIME", "TIN", "TIP", "TRUE",
+                "TRY", "TURN", "TWO", "TYPE", "UNIT", "USE", "VAN", "VERY", "VIEW", "VOTE",
+                "WAIT", "WALK", "WALL", "WANT", "WAR", "WASH", "WAVE", "WAY", "WEAR", "WEEK",
+                "WELL", "WEST", "WHAT", "WHEN", "WHO", "WIDE", "WIFI", "WILL", "WIN", "WIND",
+                "WINE", "WING", "WIRE", "WISE", "WISH", "WITH", "WOOD", "WORD", "WORK", "YEAR",
+                "YES", "YET", "YOU", "ZERO", "ZONE", "COO", "CEO", "CFO", "CTO",
             }
             for _, row in df_sp500.iterrows():
                 sym = str(row["Symbol"]).strip()
@@ -866,186 +384,36 @@ class StockEngine:
             pass
 
         us_aliases = {
-            "엔비디아": (
-                "엔비디아",
-                "NVDA",
-                "반도체/AI",
-                "🧠AI반도체/GPU 독점 세계 1위 (데이터센터 핵심)",
-            ),
-            "테슬라": (
-                "테슬라",
-                "TSLA",
-                "전기차/자율주행",
-                "🚗전기차·자율주행(FSD)·휴머노이드 로봇·ESS 대장주",
-            ),
-            "애플": (
-                "애플",
-                "AAPL",
-                "빅테크/IT",
-                "📱아이폰 및 온디바이스 AI 생태계",
-            ),
-            "마이크로소프트": (
-                "마이크로소프트",
-                "MSFT",
-                "빅테크/클라우드",
-                "☁️클라우드(Azure) 및 오픈AI(ChatGPT) 최대주주",
-            ),
-            "알파벳": (
-                "알파벳",
-                "GOOGL",
-                "빅테크/AI",
-                "🔍구글 검색·유튜브·클라우드 및 제미나이 AI",
-            ),
-            "구글": (
-                "알파벳",
-                "GOOGL",
-                "빅테크/AI",
-                "🔍구글 검색·유튜브·클라우드 및 제미나이 AI",
-            ),
-            "아마존": (
-                "아마존",
-                "AMZN",
-                "클라우드/이커머스",
-                "☁️글로벌 클라우드(AWS) 1위 및 북미 최대 전자상거래",
-            ),
-            "메타": (
-                "메타",
-                "META",
-                "빅테크/SNS",
-                "📱인스타그램·페이스북 및 오픈소스 AI(라마) 선두",
-            ),
-            "브로드컴": (
-                "브로드컴",
-                "AVGO",
-                "반도체/통신",
-                "🧠빅테크 맞춤형 AI칩(ASIC) 및 데이터센터 네트워크 반도체 1위",
-            ),
-            "TSMC": (
-                "TSMC",
-                "TSM",
-                "반도체 파운드리",
-                "🧠글로벌 반도체 위탁생산(파운드리) 독점적 1위 (대만/미국ADR)",
-            ),
-            "ASML": (
-                "ASML",
-                "ASML",
-                "반도체 장비",
-                "🧠초미세 공정 필수 EUV 노광장비 전 세계 유일 독점 기업",
-            ),
-            "인텔": (
-                "인텔",
-                "INTC",
-                "반도체",
-                "🧠PC·서버용 CPU 및 미국 반도체 제조 부활(파운드리) 지원 대상",
-            ),
-            "AMD": (
-                "AMD",
-                "AMD",
-                "반도체/AI",
-                "🧠엔비디아 대항마 AI 가속기(MI300) 및 서버용 CPU 강자",
-            ),
-            "퀄컴": (
-                "퀄컴",
-                "QCOM",
-                "반도체/통신",
-                "📱스마트폰/AI PC용 스냅드래곤 칩셋 강자",
-            ),
-            "보잉": (
-                "보잉",
-                "BA",
-                "항공/방산",
-                "✈️글로벌 양대 민항기·방산·우주 제조사",
-            ),
-            "록히드마틴": (
-                "록히드마틴",
-                "LMT",
-                "방산/우주",
-                "🛡️세계 1위 방위산업체 (F-35 스텔스기, 미사일 방어체계)",
-            ),
-            "일라이릴리": (
-                "일라이릴리",
-                "LLY",
-                "제약/바이오",
-                "💊글로벌 시총 1위 제약사 (비만치료제 '젭바운드/마운자로' 열풍)",
-            ),
-            "노보노디스크": (
-                "노보노디스크",
-                "NVO",
-                "제약/바이오",
-                "💊비만치료제 '위고비'·당뇨약 '오젬픽' 개발사",
-            ),
-            "엑슨모빌": (
-                "엑슨모빌",
-                "XOM",
-                "에너지/정유",
-                "🛢️미국 최대 석유·천연가스 메이저 기업",
-            ),
-            "셰브론": (
-                "셰브론",
-                "CVX",
-                "에너지/정유",
-                "🛢️글로벌 석유·천연가스 메이저 기업",
-            ),
-            "버크셔해서웨이": (
-                "버크셔해서웨이",
-                "BRK-B",
-                "금융/지주",
-                "🏦워런 버핏의 투자 지주사 (보험·철도·에너지·막대한 현금보유)",
-            ),
-            "팔란티어": (
-                "팔란티어",
-                "PLTR",
-                "AI 소프트웨어",
-                "🛡️미국 국방부·정보기관 및 기업용 AI 빅데이터 분석 플랫폼 대장주",
-            ),
-            "마이크론": (
-                "마이크론",
-                "MU",
-                "반도체/메모리",
-                "🧠미국 유일 메모리 반도체(DRAM·HBM) 기업 (삼성·하이닉스 경쟁사)",
-            ),
-            "버티브": (
-                "버티브",
-                "VRT",
-                "전력/데이터센터",
-                "⚡AI 데이터센터 열관리(액체냉각) 및 전력설비 핵심 수혜주",
-            ),
-            "이튼": (
-                "이튼",
-                "ETN",
-                "전력기기",
-                "⚡미국 전력망 확충 및 데이터센터 전력관리 솔루션 대장주",
-            ),
-            "GE버노바": (
-                "GE버노바",
-                "GEV",
-                "전력/에너지",
-                "⚡GE에서 분사한 가스터빈·전력망·풍력·SMR 원전 종합 에너지 기업",
-            ),
-            "뉴스케일파워": (
-                "뉴스케일파워",
-                "SMR",
-                "원전/SMR",
-                "☢️미국 대표 소형모듈원전(SMR) 설계 기업 (두산에너빌리티 파트너)",
-            ),
-            "오클로": (
-                "오클로",
-                "OKLO",
-                "원전/SMR",
-                "☢️샘 올트먼(오픈AI)이 투자한 차세대 소형원전(SMR) 기업",
-            ),
-            "아이온큐": (
-                "아이온큐",
-                "IONQ",
-                "양자컴퓨터",
-                "💻이온트랩 방식 양자컴퓨터 상용화 선두 기업",
-            ),
-            "코히런트": (
-                "코히런트",
-                "COHR",
-                "광통신/레이저",
-                "🌐AI 데이터센터용 초고속 광트랜시버(광통신 부품) 핵심 기업",
-            ),
+            "엔비디아": ("엔비디아", "NVDA", "반도체/AI", "🧠AI반도체/GPU 독점 세계 1위 (데이터센터 핵심)"),
+            "테슬라": ("테슬라", "TSLA", "전기차/자율주행", "🚗전기차·자율주행(FSD)·휴머노이드 로봇·ESS 대장주"),
+            "애플": ("애플", "AAPL", "빅테크/IT", "📱아이폰 및 온디바이스 AI 생태계"),
+            "마이크로소프트": ("마이크로소프트", "MSFT", "빅테크/클라우드", "☁️클라우드(Azure) 및 오픈AI(ChatGPT) 최대주주"),
+            "알파벳": ("알파벳", "GOOGL", "빅테크/AI", "🔍구글 검색·유튜브·클라우드 및 제미나이 AI"),
+            "구글": ("알파벳", "GOOGL", "빅테크/AI", "🔍구글 검색·유튜브·클라우드 및 제미나이 AI"),
+            "아마존": ("아마존", "AMZN", "클라우드/이커머스", "☁️글로벌 클라우드(AWS) 1위 및 북미 최대 전자상거래"),
+            "메타": ("메타", "META", "빅테크/SNS", "📱인스타그램·페이스북 및 오픈소스 AI(라마) 선두"),
+            "브로드컴": ("브로드컴", "AVGO", "반도체/통신", "🧠빅테크 맞춤형 AI칩(ASIC) 및 데이터센터 네트워크 반도체 1위"),
+            "TSMC": ("TSMC", "TSM", "반도체 파운드리", "🧠글로벌 반도체 위탁생산(파운드리) 독점적 1위 (대만/미국ADR)"),
+            "ASML": ("ASML", "ASML", "반도체 장비", "🧠초미세 공정 필수 EUV 노광장비 전 세계 유일 독점 기업"),
+            "인텔": ("인텔", "INTC", "반도체", "🧠PC·서버용 CPU 및 미국 반도체 제조 부활(파운드리) 지원 대상"),
+            "AMD": ("AMD", "AMD", "반도체/AI", "🧠엔비디아 대항마 AI 가속기(MI300) 및 서버용 CPU 강자"),
+            "퀄컴": ("퀄컴", "QCOM", "반도체/통신", "📱스마트폰/AI PC용 스냅드래곤 칩셋 강자"),
+            "보잉": ("보잉", "BA", "항공/방산", "✈️글로벌 양대 민항기·방산·우주 제조사"),
+            "록히드마틴": ("록히드마틴", "LMT", "방산/우주", "🛡️세계 1위 방위산업체 (F-35 스텔스기, 미사일 방어체계)"),
+            "일라이릴리": ("일라이릴리", "LLY", "제약/바이오", "💊글로벌 시총 1위 제약사 (비만치료제 '젭바운드/마운자로' 열풍)"),
+            "노보노디스크": ("노보노디스크", "NVO", "제약/바이오", "💊비만치료제 '위고비'·당뇨약 '오젬픽' 개발사"),
+            "엑슨모빌": ("엑슨모빌", "XOM", "에너지/정유", "🛢️미국 최대 석유·천연가스 메이저 기업"),
+            "셰브론": ("셰브론", "CVX", "에너지/정유", "🛢️글로벌 석유·천연가스 메이저 기업"),
+            "버크셔해서웨이": ("버크셔해서웨이", "BRK-B", "금융/지주", "🏦워런 버핏의 투자 지주사 (보험·철도·에너지·막대한 현금보유)"),
+            "팔란티어": ("팔란티어", "PLTR", "AI 소프트웨어", "🛡️미국 국방부·정보기관 및 기업용 AI 빅데이터 분석 플랫폼 대장주"),
+            "마이크론": ("마이크론", "MU", "반도체/메모리", "🧠미국 유일 메모리 반도체(DRAM·HBM) 기업 (삼성·하이닉스 경쟁사)"),
+            "버티브": ("버티브", "VRT", "전력/데이터센터", "⚡AI 데이터센터 열관리(액체냉각) 및 전력설비 핵심 수혜주"),
+            "이튼": ("이튼", "ETN", "전력기기", "⚡미국 전력망 확충 및 데이터센터 전력관리 솔루션 대장주"),
+            "GE버노바": ("GE버노바", "GEV", "전력/에너지", "⚡GE에서 분사한 가스터빈·전력망·풍력·SMR 원전 종합 에너지 기업"),
+            "뉴스케일파워": ("뉴스케일파워", "SMR", "원전/SMR", "☢️미국 대표 소형모듈원전(SMR) 설계 기업 (두산에너빌리티 파트너)"),
+            "오클로": ("오클로", "OKLO", "원전/SMR", "☢️샘 올트먼(오픈AI)이 투자한 차세대 소형원전(SMR) 기업"),
+            "아이온큐": ("아이온큐", "IONQ", "양자컴퓨터", "💻이온트랩 방식 양자컴퓨터 상용화 선두 기업"),
+            "코히런트": ("코히런트", "COHR", "광통신/레이저", "🌐AI 데이터센터용 초고속 광트랜시버(광통신 부품) 핵심 기업"),
         }
         for alias, (std_name, ticker, sec, desc) in us_aliases.items():
             self.stock_map[alias] = {
@@ -1057,138 +425,28 @@ class StockEngine:
             }
 
         cn_aliases = {
-            "비야디": (
-                "비야디(BYD)",
-                "1211.HK",
-                "전기차/배터리(홍콩HKD)",
-                "🇨🇳중국 전기차 및 리튬인산철(LFP) 배터리 세계 1위 기업",
-            ),
-            "BYD": (
-                "비야디(BYD)",
-                "1211.HK",
-                "전기차/배터리(홍콩HKD)",
-                "🇨🇳중국 전기차 및 리튬인산철(LFP) 배터리 세계 1위 기업",
-            ),
-            "CATL": (
-                "CATL(닝더스다이)",
-                "300750.SZ",
-                "2차전지(선전CNY)",
-                "🇨🇳글로벌 전기차 배터리 점유율 독보적 1위 기업",
-            ),
-            "닝더스다이": (
-                "CATL(닝더스다이)",
-                "300750.SZ",
-                "2차전지(선전CNY)",
-                "🇨🇳글로벌 전기차 배터리 점유율 독보적 1위 기업",
-            ),
-            "알리바바": (
-                "알리바바",
-                "BABA",
-                "이커머스/클라우드(미국ADR)",
-                "🇨🇳중국 최대 전자상거래(타오바오·알리익스프레스) 및 클라우드 빅테크",
-            ),
-            "텐센트": (
-                "텐센트",
-                "0700.HK",
-                "IT/게임/메신저(홍콩HKD)",
-                "🇨🇳중국 시총 1위 빅테크 (위챗 메신저 및 글로벌 최대 게임사)",
-            ),
-            "샤오미": (
-                "샤오미",
-                "1810.HK",
-                "스마트폰/전기차(홍콩HKD)",
-                "🇨🇳가성비 스마트폰·가전 및 전기차(SU7) 흥행 대장주",
-            ),
-            "SMIC": (
-                "SMIC(중신궈지)",
-                "0981.HK",
-                "반도체 파운드리(홍콩HKD)",
-                "🇨🇳중국 최대 반도체 위탁생산(파운드리) 국책 핵심 기업",
-            ),
-            "중신궈지": (
-                "SMIC(중신궈지)",
-                "0981.HK",
-                "반도체 파운드리(홍콩HKD)",
-                "🇨🇳중국 최대 반도체 위탁생산(파운드리) 국책 핵심 기업",
-            ),
-            "우시바이오로직스": (
-                "우시바이오로직스",
-                "2269.HK",
-                "바이오CDMO(홍콩HKD)",
-                "🇨🇳중국 대표 바이오 의약품 위탁생산 기업 (미국 생물보안법 이슈 핵심)",
-            ),
-            "우시바이오": (
-                "우시바이오로직스",
-                "2269.HK",
-                "바이오CDMO(홍콩HKD)",
-                "🇨🇳중국 대표 바이오 의약품 위탁생산 기업 (미국 생물보안법 이슈 핵심)",
-            ),
-            "바이두": (
-                "바이두",
-                "BIDU",
-                "AI/검색엔진(미국ADR)",
-                "🇨🇳중국판 구글 (검색엔진 1위 및 자율주행 로보택시·AI 선두)",
-            ),
-            "핀둬둬": (
-                "핀둬둬(테무)",
-                "PDD",
-                "이커머스(미국ADR)",
-                "🇨🇳초저가 직구 앱 '테무(Temu)' 모회사",
-            ),
-            "테무": (
-                "핀둬둬(테무)",
-                "PDD",
-                "이커머스(미국ADR)",
-                "🇨🇳초저가 직구 앱 '테무(Temu)' 모회사",
-            ),
-            "징동닷컴": (
-                "징동닷컴",
-                "JD",
-                "이커머스/물류(미국ADR)",
-                "🇨🇳중국 최대 직매입 기반 전자상거래 및 물류 기업",
-            ),
-            "메이투안": (
-                "메이투안",
-                "3690.HK",
-                "배달/로컬플랫폼(홍콩HKD)",
-                "🇨🇳중국 배달의민족 (음식배달·로컬서비스 독점적 1위)",
-            ),
-            "리오토": (
-                "리오토(이상자동차)",
-                "LI",
-                "전기차(미국ADR)",
-                "🇨🇳중국 주행거리연장형(EREV) 프리미엄 전기차 선두주자",
-            ),
-            "샤오펑": (
-                "샤오펑",
-                "XPEV",
-                "전기차/자율주행(미국ADR)",
-                "🇨🇳중국 자율주행 특화 전기차 스타트업",
-            ),
-            "니오": (
-                "니오",
-                "NIO",
-                "전기차(미국ADR)",
-                "🇨🇳배터리 교체형 중국 프리미엄 전기차 기업",
-            ),
-            "지리자동차": (
-                "지리자동차",
-                "0175.HK",
-                "완성차/전기차(홍콩HKD)",
-                "🇨🇳볼보 모회사이자 중국 대표 민영 완성차 기업",
-            ),
-            "귀주모태주": (
-                "귀주모태주(마오타이)",
-                "600519.SS",
-                "필수소비재/주류(상하이CNY)",
-                "🇨🇳중국 최고급 백주 '마오타이' 생산 기업 (중국 내수 소비 바로미터)",
-            ),
-            "마오타이": (
-                "귀주모태주(마오타이)",
-                "600519.SS",
-                "필수소비재/주류(상하이CNY)",
-                "🇨🇳중국 최고급 백주 '마오타이' 생산 기업 (중국 내수 소비 바로미터)",
-            ),
+            "비야디": ("비야디(BYD)", "1211.HK", "전기차/배터리(홍콩HKD)", "🇨🇳중국 전기차 및 리튬인산철(LFP) 배터리 세계 1위 기업"),
+            "BYD": ("비야디(BYD)", "1211.HK", "전기차/배터리(홍콩HKD)", "🇨🇳중국 전기차 및 리튬인산철(LFP) 배터리 세계 1위 기업"),
+            "CATL": ("CATL(닝더스다이)", "300750.SZ", "2차전지(선전CNY)", "🇨🇳글로벌 전기차 배터리 점유율 독보적 1위 기업"),
+            "닝더스다이": ("CATL(닝더스다이)", "300750.SZ", "2차전지(선전CNY)", "🇨🇳글로벌 전기차 배터리 점유율 독보적 1위 기업"),
+            "알리바바": ("알리바바", "BABA", "이커머스/클라우드(미국ADR)", "🇨🇳중국 최대 전자상거래(타오바오·알리익스프레스) 및 클라우드 빅테크"),
+            "텐센트": ("텐센트", "0700.HK", "IT/게임/메신저(홍콩HKD)", "🇨🇳중국 시총 1위 빅테크 (위챗 메신저 및 글로벌 최대 게임사)"),
+            "샤오미": ("샤오미", "1810.HK", "스마트폰/전기차(홍콩HKD)", "🇨🇳가성비 스마트폰·가전 및 전기차(SU7) 흥행 대장주"),
+            "SMIC": ("SMIC(중신궈지)", "0981.HK", "반도체 파운드리(홍콩HKD)", "🇨🇳중국 최대 반도체 위탁생산(파운드리) 국책 핵심 기업"),
+            "중신궈지": ("SMIC(중신궈지)", "0981.HK", "반도체 파운드리(홍콩HKD)", "🇨🇳중국 최대 반도체 위탁생산(파운드리) 국책 핵심 기업"),
+            "우시바이오로직스": ("우시바이오로직스", "2269.HK", "바이오CDMO(홍콩HKD)", "🇨🇳중국 대표 바이오 의약품 위탁생산 기업 (미국 생물보안법 이슈 핵심)"),
+            "우시바이오": ("우시바이오로직스", "2269.HK", "바이오CDMO(홍콩HKD)", "🇨🇳중국 대표 바이오 의약품 위탁생산 기업 (미국 생물보안법 이슈 핵심)"),
+            "바이두": ("바이두", "BIDU", "AI/검색엔진(미국ADR)", "🇨🇳중국판 구글 (검색엔진 1위 및 자율주행 로보택시·AI 선두)"),
+            "핀둬둬": ("핀둬둬(테무)", "PDD", "이커머스(미국ADR)", "🇨🇳초저가 직구 앱 '테무(Temu)' 모회사"),
+            "테무": ("핀둬둬(테무)", "PDD", "이커머스(미국ADR)", "🇨🇳초저가 직구 앱 '테무(Temu)' 모회사"),
+            "징동닷컴": ("징동닷컴", "JD", "이커머스/물류(미국ADR)", "🇨🇳중국 최대 직매입 기반 전자상거래 및 물류 기업"),
+            "메이투안": ("메이투안", "3690.HK", "배달/로컬플랫폼(홍콩HKD)", "🇨🇳중국 배달의민족 (음식배달·로컬서비스 독점적 1위)"),
+            "리오토": ("리오토(이상자동차)", "LI", "전기차(미국ADR)", "🇨🇳중국 주행거리연장형(EREV) 프리미엄 전기차 선두주자"),
+            "샤오펑": ("샤오펑", "XPEV", "전기차/자율주행(미국ADR)", "🇨🇳중국 자율주행 특화 전기차 스타트업"),
+            "니오": ("니오", "NIO", "전기차(미국ADR)", "🇨🇳배터리 교체형 중국 프리미엄 전기차 기업"),
+            "지리자동차": ("지리자동차", "0175.HK", "완성차/전기차(홍콩HKD)", "🇨🇳볼보 모회사이자 중국 대표 민영 완성차 기업"),
+            "귀주모태주": ("귀주모태주(마오타이)", "600519.SS", "필수소비재/주류(상하이CNY)", "🇨🇳중국 최고급 백주 '마오타이' 생산 기업 (중국 내수 소비 바로미터)"),
+            "마오타이": ("귀주모태주(마오타이)", "600519.SS", "필수소비재/주류(상하이CNY)", "🇨🇳중국 최고급 백주 '마오타이' 생산 기업 (중국 내수 소비 바로미터)"),
         }
         for alias, (std_name, ticker, sec, desc) in cn_aliases.items():
             self.stock_map[alias] = {
@@ -1233,9 +491,7 @@ class StockEngine:
                 end_idx = min(len(text), match.end() + 50)
                 snippet = text[start_idx:end_idx].strip()
 
-                is_negative = any(
-                    neg in snippet for neg in self.negative_words
-                )
+                is_negative = any(neg in snippet for neg in self.negative_words)
                 tone_label = "⚠️주의/부정" if is_negative else "🟢관심/일반"
 
                 unique_stocks[code] = {
@@ -1255,11 +511,9 @@ class StockEngine:
     def _fetch_series(self, ticker: str, min_date: datetime.date = None):
         if ticker not in self.price_cache:
             try:
-                base_date = min_date if min_date else (
-                    datetime.date.today() - datetime.timedelta(days=550)
-                )
+                # 1년 반 치 일별 주가를 한 번만 조회하여 캐싱 (동일 종목 중복 조회 방지)
                 start_fetch = (
-                    base_date - datetime.timedelta(days=90)
+                    datetime.date.today() - datetime.timedelta(days=500)
                 ).strftime("%Y-%m-%d")
                 df = fdr.DataReader(ticker, start_fetch)
                 if not df.empty:
@@ -1267,9 +521,7 @@ class StockEngine:
                     df["MA60"] = df["Close"].rolling(window=60).mean()
                     delta = df["Close"].diff()
                     gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
-                    loss = (
-                        (-delta.where(delta < 0, 0)).rolling(window=14).mean()
-                    )
+                    loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
                     rs = gain / loss
                     df["RSI"] = 100 - (100 / (1 + rs))
                     self.price_cache[ticker] = df
@@ -1317,7 +569,7 @@ class StockEngine:
                 else ("US500" if market == "US" else "HSI")
             )
             bm_df = self._fetch_series(bm_ticker, min_date=target_date)
-            alpha_yield = None
+            alpha_yield = 0.0
             if bm_df is not None and not bm_df.empty:
                 bm_valid = bm_df.loc[:yesterday_str]
                 if bm_valid.empty:
@@ -1419,168 +671,143 @@ class StockEngine:
 
 
 # ==========================================
-# 3. 엑셀 디자인 서식 함수
+# 3. 구글 시트 전용 자동 업데이트 및 스타일링 함수
 # ==========================================
-def format_excel_sheet(
-    writer,
-    sheet_name: str,
-    df: pd.DataFrame,
-    market_type: str = "KR",
-    freeze_cell: str = "D2",
-):
-    worksheet = writer.sheets[sheet_name]
-    worksheet.freeze_panes = freeze_cell
+def format_google_worksheet(worksheet, df: pd.DataFrame, market_type: str):
+    """구글 시트에 틀고정(1행 및 A~C열), 헤더 배경색, 천 단위 콤마 및 소수점 2자리 서식 적용"""
+    try:
+        # 1) 첫 행(제목) + 좌측 3개 열(채널명, 종목명, 티커) 틀고정
+        worksheet.freeze(rows=1, cols=3)
 
-    header_fill = PatternFill(
-        start_color="1F4E78", end_color="1F4E78", fill_type="solid"
-    )
-    header_font = Font(name="맑은 고딕", size=10, bold=True, color="FFFFFF")
-
-    even_row_fill = PatternFill(
-        start_color="F2F6FA", end_color="F2F6FA", fill_type="solid"
-    )
-    odd_row_fill = PatternFill(
-        start_color="FFFFFF", end_color="FFFFFF", fill_type="solid"
-    )
-
-    default_font = Font(name="맑은 고딕", size=10, color="000000")
-    bold_name_font = Font(name="맑은 고딕", size=10, bold=True, color="000000")
-    red_minus_font = Font(name="맑은 고딕", size=10, bold=True, color="D91E18")
-
-    thin_border = Border(
-        left=Side(style="thin", color="D9D9D9"),
-        right=Side(style="thin", color="D9D9D9"),
-        top=Side(style="thin", color="D9D9D9"),
-        bottom=Side(style="thin", color="D9D9D9"),
-    )
-
-    worksheet.row_dimensions[1].height = 26
-    for col_idx in range(1, len(df.columns) + 1):
-        cell = worksheet.cell(row=1, column=col_idx)
-        cell.fill = header_fill
-        cell.font = header_font
-        cell.alignment = Alignment(
-            horizontal="center", vertical="center", wrap_text=False
+        # 2) 첫 행 헤더 디자인 (네이비 배경 + 흰색 굵은 글씨 + 가운데 정렬)
+        worksheet.format(
+            "A1:Z1",
+            {
+                "backgroundColor": {"red": 0.12, "green": 0.31, "blue": 0.47},
+                "textFormat": {
+                    "foregroundColor": {"red": 1.0, "green": 1.0, "blue": 1.0},
+                    "bold": True,
+                },
+                "horizontalAlignment": "CENTER",
+            },
         )
-        cell.border = thin_border
 
-    for row_idx in range(2, len(df) + 2):
-        worksheet.row_dimensions[row_idx].height = 21
-        row_fill = even_row_fill if row_idx % 2 == 0 else odd_row_fill
-
-        for col_idx, col_name in enumerate(df.columns, 1):
+        # 3) 숫자 서식 (천 단위 콤마 및 소수점 둘째 자리 통일)
+        for idx, col_name in enumerate(df.columns, 1):
             col_str = str(col_name)
-            cell = worksheet.cell(row=row_idx, column=col_idx)
-            cell.fill = row_fill
-            cell.border = thin_border
-            cell.font = bold_name_font if col_str == "종목명" else default_font
+            # 열 번호를 알파벳으로 변환 (1->A, 2->B ...)
+            col_letter = chr(64 + idx) if idx <= 26 else f"A{chr(64 + idx - 26)}"
+            cell_range = f"{col_letter}2:{col_letter}{len(df) + 1}"
 
-            val = cell.value
-
-            if isinstance(val, (int, float)) and not pd.isna(val):
-                cell.alignment = Alignment(
-                    horizontal="right", vertical="center"
+            if "%" in col_str or "수익률" in col_str or "조정폭" in col_str or "초과" in col_str:
+                worksheet.format(
+                    cell_range,
+                    {"numberFormat": {"type": "NUMBER", "pattern": "0.00"}},
                 )
-                if (
-                    "%" in col_str
-                    or "수익률" in col_str
-                    or "조정폭" in col_str
-                    or "초과" in col_str
-                ):
-                    cell.number_format = "0.00"
-                    if val < 0:
-                        cell.font = red_minus_font
-                elif "RSI" in col_str:
-                    cell.number_format = "0.0"
-                elif "종가" in col_str or "최고가" in col_str:
-                    cell.number_format = (
-                        "#,##0" if market_type == "KR" else "#,##0.00"
-                    )
-                elif "횟수" in col_str:
-                    cell.number_format = "#,##0"
-                    cell.alignment = Alignment(
-                        horizontal="center", vertical="center"
-                    )
-            else:
-                if col_str in [
-                    "채널명",
-                    "티커",
-                    "국가",
-                    "최초언급일",
-                    "최근언급일",
-                    "작성일",
-                    "문맥분류",
-                ]:
-                    cell.alignment = Alignment(
-                        horizontal="center", vertical="center"
-                    )
-                else:
-                    cell.alignment = Alignment(
-                        horizontal="left", vertical="center"
-                    )
-
-    for idx, col in enumerate(df.columns, 1):
-        col_letter = get_column_letter(idx)
-        col_name = str(col)
-        max_len = sum(2 if ord(c) > 127 else 1 for c in col_name)
-
-        for val in df[col].astype(str):
-            val_len = sum(1.7 if ord(c) > 127 else 1 for c in val)
-            if val_len > max_len:
-                max_len = val_len
-
-        adjusted_width = min(max(max_len + 5, 11), 62)
-        worksheet.column_dimensions[col_letter].width = adjusted_width
+            elif "RSI" in col_str:
+                worksheet.format(
+                    cell_range,
+                    {"numberFormat": {"type": "NUMBER", "pattern": "0.0"}},
+                )
+            elif "종가" in col_str or "최고가" in col_str:
+                pattern = "#,##0" if market_type == "KR" else "#,##0.00"
+                worksheet.format(
+                    cell_range,
+                    {"numberFormat": {"type": "NUMBER", "pattern": pattern}},
+                )
+            elif "횟수" in col_str:
+                worksheet.format(
+                    cell_range,
+                    {"numberFormat": {"type": "NUMBER", "pattern": "#,##0"}},
+                )
+    except Exception as e:
+        print(f"   ⚠️ 시트 서식 적용 중 경미한 오류 (데이터는 정상 저장됨): {e}")
 
 
-# ==========================================
-# 4. 구글 시트 연동 및 텔레그램 발송 함수
-# ==========================================
-def update_google_sheets(dfs_dict, sheet_title="주식_인사이트_리포트"):
+def update_google_sheets(
+    dfs_dict: dict, sheet_title: str = "Stock Insight Report"
+) -> tuple[bool, str]:
+    """구글 시트에 데이터를 기록하고 (성공여부, 시트URL 또는 에러메시지)를 반환"""
     if not GOOGLE_API_AVAILABLE:
-        print("▶ 구글 API 라이브러리가 없어 구글 시트 연동을 건너뜁니다.")
-        return
+        return False, "gspread 라이브러리가 설치되지 않았습니다."
 
-    creds_json = os.environ.get("GOOGLE_CREDENTIALS")
+    creds_json = os.environ.get("GOOGLE_CREDENTIALS", "").strip()
     if not creds_json:
-        print("▶ GOOGLE_CREDENTIALS 환경 변수가 없어 구글 시트 연동을 건너뜁니다.")
-        return
+        return False, "GitHub Secrets에 GOOGLE_CREDENTIALS 값이 비어있습니다."
 
     try:
-        print(f"▶ 온라인 구글 시트('{sheet_title}') 업데이트를 시작합니다...")
         creds_dict = json.loads(creds_json)
+    except Exception as e:
+        return (
+            False,
+            f"GOOGLE_CREDENTIALS JSON 형식이 깨져있습니다. 메모장에서 전체를 다시 복사해 넣어주세요. ({e})",
+        )
+
+    try:
         scope = [
             "https://spreadsheets.google.com/feeds",
             "https://www.googleapis.com/auth/drive",
         ]
-        creds = Credentials.from_service_account_info(
-            creds_dict, scopes=scope
-        )
+        creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
         client = gspread.authorize(creds)
 
-        spreadsheet = client.open(sheet_title)
+        bot_email = creds_dict.get("client_email", "알수없음")
+        print(f"▶ 온라인 구글 시트('{sheet_title}') 접속 시도 중... (봇 계정: {bot_email})")
 
-        for sheet_name, df in dfs_dict.items():
+        try:
+            spreadsheet = client.open(sheet_title)
+        except gspread.exceptions.SpreadsheetNotFound:
+            return (
+                False,
+                f"구글 시트 '{sheet_title}'을(를) 찾을 수 없습니다!\n"
+                f"1) 시트 제목이 정확히 '{sheet_title}'인지 확인해주세요.\n"
+                f"2) 시트 우측 상단 [공유]를 눌러 로봇 이메일({bot_email})을 '편집자'로 초대했는지 꼭 확인해주세요!",
+            )
+
+        for sheet_name, (df, market_type) in dfs_dict.items():
             if df.empty:
                 continue
             try:
                 worksheet = spreadsheet.worksheet(sheet_name)
             except gspread.exceptions.WorksheetNotFound:
                 worksheet = spreadsheet.add_worksheet(
-                    title=sheet_name, rows=100, cols=20
+                    title=sheet_name, rows=max(len(df) + 20, 100), cols=20
                 )
 
             worksheet.clear()
-            # 날짜 및 숫자 데이터를 문자열로 변환하여 구글 시트에 깔끔하게 기록
-            df_str = df.astype(str)
-            data_to_upload = [df_str.columns.tolist()] + df_str.values.tolist()
-            worksheet.update(data_to_upload)
-            print(f"   - '{sheet_name}' 시트 업로드 완료!")
+
+            # 날짜는 문자열로, 숫자는 진짜 숫자(int/float) 그대로 유지하여 업로드!
+            df_clean = df.copy()
+            for col in df_clean.columns:
+                if df_clean[col].dtype == "object":
+                    df_clean[col] = df_clean[col].astype(str)
+            df_clean = df_clean.fillna("")
+
+            data_to_upload = [df_clean.columns.tolist()] + df_clean.values.tolist()
+            worksheet.update(data_to_upload, value_input_option="USER_ENTERED")
+
+            # 틀고정 및 숫자 포맷 적용
+            format_google_worksheet(worksheet, df_clean, market_type)
+            print(f"   ✅ '{sheet_name}' 시트 업데이트 및 서식 적용 완료!")
+            time.sleep(1)
+
+        # 기본으로 생성되어 있던 빈 '시트1(Sheet1)'이 남아있으면 깔끔하게 삭제 시도
+        for default_name in ["시트1", "Sheet1"]:
+            try:
+                if len(spreadsheet.worksheets()) > 1:
+                    del_ws = spreadsheet.worksheet(default_name)
+                    spreadsheet.del_worksheet(del_ws)
+            except Exception:
+                pass
+
+        return True, spreadsheet.url
+
     except Exception as e:
-        print(f"❌ 구글 시트 업데이트 중 오류 발생: {e}")
+        return False, f"구글 시트 업데이트 중 예외 발생: {e}"
 
 
-def send_telegram_alert(output_file: str, summary_text: str):
+def send_telegram_message(summary_text: str):
+    """엑셀 파일 없이 깔끔하게 텍스트 리포트와 구글 시트 링크만 전송"""
     token = os.environ.get("TELEGRAM_TOKEN")
     chat_id = os.environ.get("TELEGRAM_CHAT_ID")
     if not token or not chat_id:
@@ -1588,39 +815,36 @@ def send_telegram_alert(output_file: str, summary_text: str):
         return
 
     try:
-        print("▶ 텔레그램으로 요약 메시지와 엑셀 파일을 전송합니다...")
-        # 1) 텍스트 메시지 전송
+        print("▶ 텔레그램으로 아침 리포트 메시지를 전송합니다...")
         msg_url = f"https://api.telegram.org/bot{token}/sendMessage"
-        requests.post(
+        res = requests.post(
             msg_url,
             data={
                 "chat_id": chat_id,
                 "text": summary_text,
-                "parse_mode": "Markdown",
+                "disable_web_page_preview": True,
             },
         )
-
-        # 2) 엑셀 파일 첨부 전송
-        doc_url = f"https://api.telegram.org/bot{token}/sendDocument"
-        with open(output_file, "rb") as f:
-            requests.post(
-                doc_url,
-                data={"chat_id": chat_id, "caption": "📊 오늘의 주식 타점 분석 리포트"},
-                files={"document": f},
-            )
-        print("▶ 텔레그램 전송 완료!")
+        if res.status_code == 200:
+            print("▶ 텔레그램 메시지 전송 완료!")
+        else:
+            print(f"⚠️ 텔레그램 응답 코드 확인 필요: {res.text}")
     except Exception as e:
         print(f"❌ 텔레그램 전송 중 오류 발생: {e}")
 
 
 # ==========================================
-# 5. 메인 실행 파이프라인
+# 4. 메인 실행 파이프라인 (구글 시트 전용)
 # ==========================================
 DB_FILE = "stock_mention_history_db_v4.csv"
 
 
 def run_pipeline():
-    INITIAL_SEARCH_DAYS = 365  # 운영 시 365로 변경 가능
+    # 최초 장부 생성 시 365일 치 수집, 장부가 있으면 새 글만 10초 만에 수집!
+    INITIAL_SEARCH_DAYS = 365
+
+    # 시트 이름은 무조건 'Stock Insight Report'로 고정 (환경변수가 옛날 이름이어도 무시)
+    TARGET_SHEET_NAME = "Stock Insight Report"
 
     if os.path.exists(DB_FILE):
         df_history = pd.read_csv(DB_FILE, dtype={"content_id": str, "티커": str})
@@ -1678,8 +902,15 @@ def run_pipeline():
         print("누적된 종목 데이터가 없습니다.")
         return
 
+    print(
+        f"\n▶ 누적된 전체 기록({len(df_history)}건)의 전일 종가 및 주가 흐름을 계산합니다..."
+    )
     updated_rows = []
     for _, row in df_history.iterrows():
+        # 영문 NAVER 오탐 기록이 장부에 남아있을 경우 자동 걸러내기
+        if str(row["종목명"]) == "NAVER" and "네이버" not in str(row.get("본문_언급_문맥", "")):
+            continue
+
         past_p, prev_close_p, rate, alpha = engine.get_price_and_benchmark(
             str(row["티커"]), row["작성일"], row["국가"]
         )
@@ -1720,17 +951,17 @@ def run_pipeline():
             "국가": market,
             "핵심테마_하는일": last_row.get("핵심테마_하는일", ""),
             "최근_이슈키워드": last_row.get("이슈_키워드", ""),
-            "관심언급횟수": len(group),
+            "관심언급횟수": int(len(group)),
             "종합_진입추천": traj["종합_진입추천"],
             "차트추세(이평선)": traj["차트추세(이평선)"],
-            "최초언급일": first_row["작성일"],
+            "최초언급일": str(first_row["작성일"]),
             "최초언급_종가": first_row["언급일_종가"],
             "언급후_최고가": traj["언급후_최고가"],
             "전일_종가": last_row["전일_종가"],
             "최초대비_수익률(%)": first_row["전일종가_수익률(%)"],
             "최고가대비_조정폭(%)": traj["최고가대비_조정폭(%)"],
             "현재_RSI": traj["현재_RSI"],
-            "최근언급일": last_row["작성일"],
+            "최근언급일": str(last_row["작성일"]),
             "최근언급_문맥": last_row["본문_언급_문맥"],
             "최근글_링크": last_row["링크"],
         })
@@ -1761,106 +992,55 @@ def run_pipeline():
         by="작성일", ascending=False
     )
     detail_cols = [
-        "채널명",
-        "종목명",
-        "티커",
-        "국가",
-        "작성일",
-        "업종_섹터",
-        "핵심테마_하는일",
-        "이슈_키워드",
-        "문맥분류",
-        "언급일_종가",
-        "전일_종가",
-        "전일종가_수익률(%)",
-        "시장초과수익률(%p)",
-        "본문_언급_문맥",
-        "콘텐츠_제목",
-        "링크",
+        "채널명", "종목명", "티커", "국가", "작성일", "업종_섹터",
+        "핵심테마_하는일", "이슈_키워드", "문맥분류", "언급일_종가",
+        "전일_종가", "전일종가_수익률(%)", "시장초과수익률(%p)",
+        "본문_언급_문맥", "콘텐츠_제목", "링크",
     ]
     df_detail = df_detail[detail_cols]
 
-    # 엑셀 파일 저장
-    output_file = f"주식인사이트리포트_{datetime.date.today().strftime('%Y%m%d')}.xlsx"
-    with pd.ExcelWriter(output_file, engine="openpyxl") as writer:
-        if not df_kr.empty:
-            df_kr.to_excel(
-                writer, sheet_name="1_한국주식_타점(원)", index=False
-            )
-            format_excel_sheet(
-                writer,
-                "1_한국주식_타점(원)",
-                df_kr,
-                market_type="KR",
-                freeze_cell="D2",
-            )
-        if not df_us.empty:
-            df_us.to_excel(
-                writer, sheet_name="2_미국주식_타점(달러)", index=False
-            )
-            format_excel_sheet(
-                writer,
-                "2_미국주식_타점(달러)",
-                df_us,
-                market_type="US",
-                freeze_cell="D2",
-            )
-        if not df_cn.empty:
-            df_cn.to_excel(
-                writer, sheet_name="3_중국홍콩_타점", index=False
-            )
-            format_excel_sheet(
-                writer,
-                "3_중국홍콩_타점",
-                df_cn,
-                market_type="CN",
-                freeze_cell="D2",
-            )
-        df_detail.to_excel(
-            writer, sheet_name="4_전체_누적언급내역", index=False
-        )
-        format_excel_sheet(
-            writer,
-            "4_전체_누적언급내역",
-            df_detail,
-            market_type="ALL",
-            freeze_cell="D2",
-        )
+    # 온라인 구글 시트('Stock Insight Report') 업데이트 실행
+    dfs_for_google = {
+        "1_한국주식_타점(원)": (df_kr, "KR"),
+        "2_미국주식_타점(달러)": (df_us, "US"),
+        "3_중국홍콩_타점": (df_cn, "CN"),
+        "4_전체_누적언급내역": (df_detail, "ALL"),
+    }
 
-    # 온라인 구글 시트 업데이트 실행
-    dfs_for_google = {}
-    if not df_kr.empty:
-        dfs_for_google["1_한국주식_타점(원)"] = df_kr
-    if not df_us.empty:
-        dfs_for_google["2_미국주식_타점(달러)"] = df_us
-    if not df_cn.empty:
-        dfs_for_google["3_중국홍콩_타점"] = df_cn
-    dfs_for_google["4_전체_누적언급내역"] = df_detail
+    success, result_info = update_google_sheets(
+        dfs_for_google, sheet_title=TARGET_SHEET_NAME
+    )
 
-    update_google_sheets(dfs_for_google, sheet_title="Stock Insight Report")
-
-    # 텔레그램 알림 메시지 생성
+    # 텔레그램 알림 메시지 구성 (엑셀 파일 없이 깔끔한 텍스트 + 구글 시트 링크)
     top_picks = (
         df_summary[df_summary["종합_진입추천"].str.contains("⭐최우선 타점")]
-        .head(3)
+        .head(5)
         .to_dict("records")
     )
     pick_str = (
         "\n".join([
-            f"• **{p['종목명']}** ({p['티커']}): {p['종합_진입추천']}"
+            f"• {p['종목명']} ({p['티커']}): {p['종합_진입추천']} [조정폭 {p['최고가대비_조정폭(%)']:.2f}%]"
             for p in top_picks
         ])
         if top_picks
-        else "• 특이 포착 종목 없음"
+        else "• 현재 기준 최우선 눌림목 포착 종목 없음"
     )
 
+    if success:
+        sheet_status_msg = f"✅ 구글 시트 업데이트 완료!\n🔗 시트 바로가기: {result_info}"
+    else:
+        sheet_status_msg = f"❌ 구글 시트 업데이트 실패!\n💡 원인: {result_info}"
+
     telegram_msg = (
-        f"📊 *[메르 블로그 주식 타점 리포트]*\n"
-        f"📅 기준일: {datetime.date.today()}\n\n"
-        f"🎯 *주요 타점 포착 종목 추천*\n{pick_str}\n\n"
-        f"🔗 구글 시트(`Stock Insight Report`) 및 첨부된 엑셀 파일에서 상세 지표(RSI, 이평선 추세, 최고가 대비 조정폭)를 확인하세요!"
+        f"📊 [주식 인사이트 & 타점 리포트]\n"
+        f"📅 기준일: {datetime.date.today()} (신규 수집 글: {len(new_contents)}개)\n\n"
+        f"🎯 [오늘의 최우선 타점 포착 종목]\n{pick_str}\n\n"
+        f"📈 분석 현황: 한국 {len(df_kr)}개 / 미국 {len(df_us)}개 / 중국 {len(df_cn)}개\n\n"
+        f"{sheet_status_msg}"
     )
-    send_telegram_alert(output_file, telegram_msg)
+
+    send_telegram_message(telegram_msg)
+    print("\n🎉 모든 작업이 완료되었습니다!")
 
 
 if __name__ == "__main__":
