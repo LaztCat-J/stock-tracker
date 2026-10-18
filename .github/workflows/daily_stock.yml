@@ -2,8 +2,8 @@ name: Daily Stock Mention Tracker
 
 on:
   schedule:
-    # UTC 22:40 = 한국 시간(KST) 오전 07:40 (정각 대기열을 피해 8시 전에 도착!)
-    - cron: '40 22 * * *'
+    # UTC 23:50 = 한국 시간(KST) 기준 매주 토요일 오전 08:50
+    - cron: '50 23 * * 5'
   workflow_dispatch: # 내가 원할 때 마우스 클릭 한 번으로 즉시 테스트 실행하는 버튼
 
 permissions:
